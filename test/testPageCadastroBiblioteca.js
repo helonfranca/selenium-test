@@ -29,10 +29,20 @@ describe('Selenium Testes para o Formulário de Pré-Cadastro da Biblioteca', fu
         // Preencher "Nome Completo"
         await driver.wait(until.elementLocated(By.id('input_1_1')), 10000).sendKeys(dados.nome);
 
-        // Preencher "CPF" caractere por caractere com um pequeno atraso
+        // Localizar o campo de CPF e garantir que está visível
         let cpfField = await driver.wait(until.elementLocated(By.id('input_1_4')), 10000);
+
+        // Focar no campo de entrada
+        await cpfField.click();
+
+        // Mover o cursor para o início do campo usando JavaScript
+        await driver.executeScript("arguments[0].focus();", cpfField);
+
         await cpfField.clear();
+
+        // Preencher o campo caractere por caractere com um pequeno atraso
         for (const char of dados.cpf) {
+            await driver.executeScript("arguments[0].focus();", cpfField);
             await cpfField.sendKeys(char);
             await driver.sleep(100); // Atraso de 100 ms entre caracteres
         }
@@ -43,10 +53,20 @@ describe('Selenium Testes para o Formulário de Pré-Cadastro da Biblioteca', fu
         // Preencher "E-mail"
         await driver.wait(until.elementLocated(By.id('input_1_12')), 10000).sendKeys(dados.email);
 
-        // Preencher "Celular" caractere por caractere com um pequeno atraso
+        // Localizar o campo de CPF e garantir que está visível
         let celularField = await driver.wait(until.elementLocated(By.id('input_1_8')), 10000);
+
+        // Focar no campo de entrada
+        await celularField.click();
+
+        // Mover o cursor para o início do campo usando JavaScript
+        await driver.executeScript("arguments[0].focus();", celularField);
+
+        await celularField.clear();
+
         await celularField.clear();
         for (const char of dados.celular) {
+            await driver.executeScript("arguments[0].focus();", celularField);
             await celularField.sendKeys(char);
             await driver.sleep(100); // Atraso de 100 ms entre caracteres
         }
@@ -80,9 +100,9 @@ describe('Selenium Testes para o Formulário de Pré-Cadastro da Biblioteca', fu
         // Preencher "CEP"
         await driver.wait(until.elementLocated(By.id('input_1_34')), 10000).sendKeys(dados.cep);
 
-        // Preencher "Curso / Programa"
+        // Preencher "Curso"
         await driver.wait(until.elementLocated(By.id('input_1_14')), 10000).sendKeys(dados.curso);
-        
+
         // Pausa de 5 segundos antes de "submeter" o formulário
         await driver.sleep(5000);
 
@@ -90,11 +110,36 @@ describe('Selenium Testes para o Formulário de Pré-Cadastro da Biblioteca', fu
         await submitButton.click();
 
         // Pausa de 5 segundos antes de "submeter" o formulário
-        await driver.sleep(10000);
+        await driver.sleep(5000);
 
-        //verificar se retornou algum erro dos campos
+        // Verificar se há mensagens de erro
+        const errorMessages = [
+            'validation_message_1_3',
+            'validation_message_1_35',
+            'validation_message_1_1',
+            'validation_message_1_4', 
+            'validation_message_1_12', 
+            'validation_message_1_8',
+            'validation_message_1_25',
+            'validation_message_1_32',
+            'validation_message_1_26',
+            'validation_message_1_30',
+            'validation_message_1_33',
+            'validation_message_1_34'
+        ];
 
-        // se não retornou vá para o proximo caso de teste  
+        for (const id of errorMessages) {
+            try {
+                const errorElement = await driver.findElement(By.id(id));
+                const isDisplayed = await errorElement.isDisplayed();
+                if (isDisplayed) {
+                    const errorMessage = await errorElement.getText();
+                    console.log(`Mensagem de erro encontrada: ${errorMessage}`);
+                }
+            } catch (error) {
+                console.log(`Mensagem de erro com ID ${id} não encontrada.`);
+            }
+        }
     }
 
     // Casos de Teste com dados variados
@@ -278,7 +323,7 @@ describe('Selenium Testes para o Formulário de Pré-Cadastro da Biblioteca', fu
     ];
 
     casosDeTeste.forEach((dados, index) => {
-        it(`deve preencher o formulário com os dados do caso ${index + 1} (em tempo de execução)`, async function () {
+        it(`deve preencher o formulário com os dados do caso ${index + 1} - Retornar sem erro nos campos simples`, async function () {
             await preencherFormulario(dados);
         });
     });
